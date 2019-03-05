@@ -60,9 +60,6 @@ func (p Pin) Cleanup() {
 
 // Read returns the value read at the pin as reported by the kernel. This should only be used for input pins
 func (p Pin) Read() (value uint, err error) {
-	if p.direction != inDirection {
-		return 0, errors.New("pin is not configured for input")
-	}
 	return readPin(p)
 }
 
