@@ -3,7 +3,6 @@ package gpio
 import (
 	"errors"
 	"os"
-	"time"
 )
 
 // Pin represents a single pin, which can be used either for reading or writing
@@ -19,7 +18,6 @@ func NewInput(p uint) Pin {
 		Number: p,
 	}
 	exportGPIO(pin)
-	time.Sleep(10 * time.Millisecond)
 	pin.direction = inDirection
 	setDirection(pin, inDirection, 0)
 	pin = openPin(pin, false)
@@ -33,7 +31,6 @@ func NewOutput(p uint, initHigh bool) Pin {
 		Number: p,
 	}
 	exportGPIO(pin)
-	time.Sleep(10 * time.Millisecond)
 	initVal := uint(0)
 	if initHigh {
 		initVal = uint(1)
