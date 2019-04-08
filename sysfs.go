@@ -6,6 +6,8 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	"golang.org/x/sys/unix"
 )
 
 type direction uint
@@ -38,15 +40,15 @@ const (
 	Active   Value = 1
 )
 
-const timeout = 2 * time.Second
+const timeout = 1 * time.Second
 
-func waitUntilExported(p *Pin) error {
+func waitUntilWritable(p *Pin) error {
 	start := time.Now()
 	for {
 		if time.Since(start) >= timeout {
 			return fmt.Errorf("Exporting pin %d took more than %v", p.Number, timeout)
 		}
-		if _, err := os.Stat(fmt.Sprintf("/sys/class/gpio/gpio%d", p.Number)); err == nil {
+		if unix.Access(fmt.Sprintf("/sys/class/gpio/gpio%d/direction", p.Number), unix.W_OK) == nil {
 			return nil
 		}
 		time.Sleep(10 * time.Millisecond)
@@ -61,7 +63,7 @@ func exportGPIO(p Pin) {
 	}
 	defer export.Close()
 	export.Write([]byte(strconv.Itoa(int(p.Number))))
-	waitUntilExported(&p)
+	waitUntilWritable(&p)
 }
 
 func unexportGPIO(p Pin) {
