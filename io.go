@@ -13,32 +13,42 @@ type Pin struct {
 }
 
 // NewInput opens the given pin number for reading. The number provided should be the pin number known by the kernel
-func NewInput(p uint) Pin {
+func NewInput(p uint) (Pin, error) {
 	pin := Pin{
 		Number: p,
 	}
-	exportGPIO(pin)
+	err := exportGPIO(pin)
+	if err != nil {
+		return pin, err
+	}
 	pin.direction = inDirection
-	setDirection(pin, inDirection, 0)
-	pin = openPin(pin, false)
-	return pin
+	err = setDirection(pin, inDirection, 0)
+	if err != nil {
+		return pin, err
+	}
+	return openPin(pin, false)
 }
 
 // NewOutput opens the given pin number for writing. The number provided should be the pin number known by the kernel
 // NewOutput also needs to know whether the pin should be initialized high (true) or low (false)
-func NewOutput(p uint, initHigh bool) Pin {
+func NewOutput(p uint, initHigh bool) (Pin, error) {
 	pin := Pin{
 		Number: p,
 	}
-	exportGPIO(pin)
+	err := exportGPIO(pin)
+	if err != nil {
+		return pin, err
+	}
 	initVal := uint(0)
 	if initHigh {
 		initVal = uint(1)
 	}
 	pin.direction = outDirection
-	setDirection(pin, outDirection, initVal)
-	pin = openPin(pin, true)
-	return pin
+	err = setDirection(pin, outDirection, initVal)
+	if err != nil {
+		return pin, err
+	}
+	return openPin(pin, true)
 }
 
 // Close releases the resources related to Pin. This doen't unexport Pin, use Cleanup() instead
@@ -50,13 +60,13 @@ func (p Pin) Close() {
 }
 
 // Cleanup close Pin and unexport it
-func (p Pin) Cleanup() {
+func (p Pin) Cleanup() error {
 	p.Close()
-	unexportGPIO(p)
+	return unexportGPIO(p)
 }
 
 // Read returns the value read at the pin as reported by the kernel. This should only be used for input pins
-func (p Pin) Read() (value uint, err error) {
+func (p Pin) Read() (uint, error) {
 	return readPin(p)
 }
 
