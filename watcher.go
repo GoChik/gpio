@@ -199,12 +199,20 @@ func (w *Watcher) watch() {
 	}
 }
 
-// AddPin adds a new pin to be watched for changes.
+// AddNewPin adds a new pin to be watched for changes.
 // The pin is configured with logic level "active high"
 // and watched for both rising and falling edges.
 // The pin provided should be the pin known by the kernel
-func (w *Watcher) AddPin(p uint) {
+func (w *Watcher) AddNewPin(p uint) {
 	w.AddPinWithEdgeAndLogic(p, EdgeBoth, ActiveHigh)
+}
+
+// AddPin adds an already opened pin to be watched for changes
+func (w *Watcher) AddPin(p Pin) {
+	w.cmdChan <- watcherCmd{
+		pin:    p,
+		action: watcherAdd,
+	}
 }
 
 // AddPinWithEdgeAndLogic adds a new pin to be watched for changes.
